@@ -12,22 +12,22 @@ import (
 	ddos "github.com/ginozza/doom/pkg/ddos"
 )
 
-// getFreePort intenta encontrar un puerto libre disponible en el rango de puertos de usuario.
+// getFreePort attempts to find an available free port within the user port range.
 func getFreePort() int {
-	// Rango de puertos para la búsqueda
+	// Port range for the search
 	for port := 1024; port <= 65535; port++ {
 		address := fmt.Sprintf("localhost:%d", port)
-		// Intenta escuchar en el puerto
+		// Try to listen on the port
 		listener, err := net.Listen("tcp", address)
 		if err != nil {
-			// El puerto ya está en uso, prueba con el siguiente
+			// The port is already in use, try the next one
 			continue
 		}
-		// Cierra el listener después de encontrar un puerto libre
+		// Close the listener after finding a free port
 		listener.Close()
 		return port
 	}
-	// Si no se encuentra un puerto libre, retorna 0
+	// If no free port is found, return 0
 	return 0
 }
 
@@ -65,9 +65,9 @@ func TestDDoS(t *testing.T) {
 	t.Logf("Statistic: %d %d", success, amount)
 }
 
-// Create a simple go server
+// Create a simple Go server
 func createServer(port int, t *testing.T) {
-	// Canal para recibir errores del servidor
+	// Channel to receive server errors
 	errCh := make(chan error, 1)
 
 	go func() {
@@ -75,20 +75,20 @@ func createServer(port int, t *testing.T) {
 			fmt.Fprintf(w, "Hi there, I love %s!", r.URL.Path[1:])
 		})
 		err := http.ListenAndServe(":"+strconv.Itoa(port), nil)
-		errCh <- err // Enviar el error al canal
+		errCh <- err // Send the error to the channel
 	}()
 
-	// Esperar un corto período para asegurarse de que el servidor se inicie
+	// Wait for a short period to ensure the server starts
 	time.Sleep(time.Millisecond * 100)
 
-	// Verificar si hubo algún error al iniciar el servidor
+	// Check if there were any errors starting the server
 	select {
 	case err := <-errCh:
 		if err != nil {
 			t.Fatalf("Server is down. %v", err)
 		}
 	default:
-		// No hay errores, el servidor está funcionando
+		// No errors, the server is running
 	}
 }
 
